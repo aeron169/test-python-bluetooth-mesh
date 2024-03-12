@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
+
+'''
+This file is a sample application that can be used to test the bluetooth mesh network.
+It is a server that receives, store and sends the onoff status of a node.
+It can be added to a network
+'''
+
 import sys
 import asyncio
 from contextlib import suppress
 import logging
-import secrets
-from enum import IntEnum
 
 sys.path.append('bluetooth_mesh')
 from bluetooth_mesh.application import Application, Element
-from bluetooth_mesh.crypto import ApplicationKey, DeviceKey, NetworkKey
-from bluetooth_mesh.messages.config import GATTNamespaceDescriptor, StatusCode
+from bluetooth_mesh.messages.config import GATTNamespaceDescriptor
 from bluetooth_mesh.messages.generic.onoff import GenericOnOffOpcode
-from bluetooth_mesh.models.base import Model
 from bluetooth_mesh.models import ConfigServer, GenericOnOffServer
-from bluetooth_mesh.tokenring import TokenRing
 
 logging.basicConfig(level=logging.INFO)
 
@@ -103,63 +105,19 @@ class SampleApplication(Application):
     def __init__(self, loop):
         super().__init__(loop)
         self.address = 0x0002
-
-    @property
-    def dev_key(self):
-        return DeviceKey(bytes.fromhex(secrets.token_hex(16)))
-
-    @property
-    def primary_net_key(self):
-        return 0, NetworkKey(bytes.fromhex('4696cead19afc4c876677e18bfcf6522'))
-
-    @property
-    def app_keys(self):
-        return {0: ApplicationKey(secrets.token_bytes(16))}
-
-    # async def configure(self):
-
-        # print('Configuring node...')
-        # # client = self.elements[0][ConfigClient]
-
-        # status = await client.bind_app_key(
-        #     self.address, net_index=0,
-        #     element_address=self.address,
-        #     app_key_index=0,
-        #     model=GenericOnOffClient
-        # )
-
-        # status = await client.bind_app_key(
-        #     self.address, net_index=0,
-        #     element_address=self.address,
-        #     app_key_index=0,
-        #     model=GenericOnOffServerHandler
-        # )
     
 
     async def run(self):
         async with self:
-            # self.uuid = '00000000-0000-1000-8000-00805f9b34fb'
             self.logger.info('Connecting with address: %s, and token: %x', self.address, self.token_ring.token)
-            # await self.connect()
-            # await self.configure()
 
             print('Starting app')
-            # client = self.elements[0][GenericOnOffClient]
             server = self.elements[0][GenericOnOffServerHandler]
             await self.join()
 
             while True:
                 await asyncio.sleep(1)
                 print('Light status: ', server.light_status)
-            # status = await client.set_onoff_unack(self.address, 0, onoff=1, retransmissions=1)
-            # await asyncio.sleep(1)
-            # status = await client.get_light_status([self.address], 0)
-            # print('Light status: ', status)
-            # await asyncio.sleep(2)
-            # status = await client.set_onoff_unack(self.address, 0, onoff=0, retransmissions=1)
-            # await asyncio.sleep(1)
-            # status = await client.get_light_status([self.address], 0)
-            # print('Light status: ', status)
             
 
             
